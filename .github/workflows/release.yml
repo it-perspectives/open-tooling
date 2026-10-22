@@ -37,7 +37,7 @@ jobs:
           repository: it-perspectives/open-tooling
           ref: ${{ inputs.tooling-ref }}
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
       - run: npm ci --ignore-scripts
@@ -67,7 +67,7 @@ jobs:
           repository: it-perspectives/open-tooling
           ref: ${{ inputs.tooling-ref }}
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: needs.plan.outputs[matrix.destination] == 'true'
         with:
           node-version: 24
@@ -108,7 +108,7 @@ jobs:
           repository: it-perspectives/open-tooling
           ref: ${{ inputs.tooling-ref }}
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
       - run: npm ci --ignore-scripts
