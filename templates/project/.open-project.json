@@ -1,0 +1,34 @@
+{
+  "$schema": "https://raw.githubusercontent.com/it-perspectives/open-tooling/v0.1.0/schemas/open-project.schema.json",
+  "openProject": 1,
+  "id": "openexample",
+  "title": "Open Example",
+  "repository": "it-perspectives/open-example",
+  "specification": {
+    "version": "0.1.0",
+    "key": "openexample",
+    "schema": "schemas/openexample-0.1.0.schema.json",
+    "examples": { "json": "examples/openexample.json", "yaml": "examples/openexample.yaml" },
+    "invalidExamples": ["examples/invalid/missing-required.json"]
+  },
+  "source": [".open-project.json", ".github", ".gitignore", "README.md", "SPEC.md", "CHANGELOG.md", "LICENSE", "package.json", "package-lock.json", "schemas", "examples", "docs", "src", "bin", "scripts", "test", "extensions", "website"],
+  "checks": { "verify": "verify" },
+  "products": {
+    "npm": { "name": "@it-perspectives/openexample", "verify": "tooling:smoke-npm" },
+    "vscode": { "enabled": true, "packageJson": "extensions/vscode/package.json", "build": "vscode:package", "verify": "vscode:test", "vsix": "dist/openexample-0.1.0.vsix", "minimumVersion": "1.100.0" },
+    "website": {
+      "enabled": true,
+      "packageJson": "website/package.json",
+      "build": "site:build",
+      "verify": "site:check",
+      "directory": "website/dist",
+      "routes": ["/", "/contract/", "/quickstart/"],
+      "assets": [
+        { "source": "schemas/openexample-0.1.0.schema.json", "path": "openexample-0.1.0.schema.json" },
+        { "source": "examples/openexample.json", "path": "openexample.json" },
+        { "source": "examples/openexample.yaml", "path": "openexample.yaml" }
+      ]
+    }
+  },
+  "publishing": { "npm": false, "marketplace": false, "openVSX": false }
+}

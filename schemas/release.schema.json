@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Open Tooling release inventory v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["manifestVersion", "project", "repository", "commit", "sourceDirty", "tooling", "component", "version", "tag", "versions", "complete", "omissions", "publishing", "npm", "artifacts"],
+  "properties": {
+    "manifestVersion": { "const": 1 },
+    "project": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "repository": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+    "commit": { "$ref": "#/definitions/commit" },
+    "sourceDirty": { "type": "boolean" },
+    "tooling": {
+      "type": "object", "additionalProperties": false, "required": ["version", "commit"],
+      "properties": { "version": { "$ref": "#/definitions/version" }, "commit": { "anyOf": [{ "$ref": "#/definitions/commit" }, { "type": "null" }] } }
+    },
+    "component": { "enum": ["specification", "vscode", "website"] },
+    "version": { "$ref": "#/definitions/version" },
+    "tag": { "anyOf": [{ "type": "string", "pattern": "^(specification|extension|website)-v[0-9]+\\.[0-9]+\\.[0-9]+$" }, { "type": "null" }] },
+    "versions": {
+      "type": "object", "additionalProperties": false, "required": ["specification", "npm"],
+      "properties": { "specification": { "$ref": "#/definitions/version" }, "npm": { "$ref": "#/definitions/version" }, "vscode": { "$ref": "#/definitions/version" }, "website": { "$ref": "#/definitions/version" } }
+    },
+    "complete": { "type": "boolean" },
+    "omissions": {
+      "type": "array", "maxItems": 2,
+      "items": { "type": "object", "additionalProperties": false, "required": ["product", "reason"], "properties": { "product": { "enum": ["vscode", "website"] }, "reason": { "type": "string", "minLength": 10 } } }
+    },
+    "publishing": { "$ref": "https://raw.githubusercontent.com/it-perspectives/open-tooling/v0.1.0/schemas/open-project.schema.json#/properties/publishing" },
+    "npm": { "type": "object", "additionalProperties": false, "required": ["name"], "properties": { "name": { "type": "string", "pattern": "^(@[a-z0-9-]+/)?[a-z0-9][a-z0-9._-]*$" } } },
+    "vscode": {
+      "type": "object", "additionalProperties": false, "required": ["publisher", "name", "version"],
+      "properties": { "publisher": { "type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-]*$" }, "name": { "type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9-]*$" }, "version": { "$ref": "#/definitions/version" } }
+    },
+    "image": {
+      "type": "object", "additionalProperties": false, "required": ["reference", "imageId", "platform"],
+      "properties": { "reference": { "type": "string", "pattern": "^open-tooling-[a-z][a-z0-9-]*:[a-f0-9]{40,64}$" }, "imageId": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }, "platform": { "const": "linux/amd64" } }
+    },
+    "artifacts": {
+      "type": "array", "minItems": 8,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["path", "kind", "size", "sha256"],
+        "properties": {
+          "path": { "type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]*$" },
+          "kind": { "enum": ["schema", "specification", "example", "changelog", "npm", "vscode", "website", "website-image", "source", "notes"] },
+          "size": { "type": "integer", "minimum": 1 }, "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "version": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" },
+    "commit": { "type": "string", "pattern": "^([a-f0-9]{40}|[a-f0-9]{64})$" }
+  }
+}

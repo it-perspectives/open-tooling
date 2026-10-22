@@ -1,0 +1,53 @@
+{
+  "$schema": "https://raw.githubusercontent.com/it-perspectives/open-tooling/v0.1.0/schemas/open-project.schema.json",
+  "openProject": 1,
+  "id": "opensite",
+  "title": "OpenSite",
+  "repository": "it-perspectives/open-site",
+  "specification": {
+    "version": "0.1.0",
+    "key": "opensite",
+    "schema": "schemas/opensite-0.1.0.schema.json",
+    "examples": {
+      "json": "examples/opensite.json",
+      "yaml": "examples/opensite.yaml"
+    }
+  },
+  "source": [
+    ".open-project.json",
+    ".github",
+    ".editorconfig",
+    ".gitignore",
+    "README.md",
+    "README.ru.md",
+    "SPEC.md",
+    "CONTRIBUTING.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "package.json",
+    "package-lock.json",
+    "schemas",
+    "examples",
+    "docs",
+    "src",
+    "bin",
+    "scripts",
+    "test"
+  ],
+  "checks": { "verify": "verify" },
+  "products": {
+    "npm": {
+      "name": "@it-perspectives/opensite",
+      "verify": "tooling:smoke-npm"
+    },
+    "vscode": {
+      "enabled": false,
+      "reason": "VS Code extension has not been implemented yet."
+    },
+    "website": {
+      "enabled": false,
+      "reason": "Documentation website has not been implemented yet."
+    }
+  },
+  "publishing": { "npm": false, "marketplace": false, "openVSX": false }
+}

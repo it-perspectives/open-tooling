@@ -1,0 +1,67 @@
+name: Publish tooling
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+concurrency:
+  group: publish-tooling-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm ci --ignore-scripts
+      - run: node scripts/check-tooling-tag.js
+      - run: npm run verify
+      - run: node scripts/smoke-package.js
+  package:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci --ignore-scripts
+      - run: node scripts/check-tooling-tag.js
+      - run: mkdir -p dist && npm pack --ignore-scripts --pack-destination dist
+      - name: Checksum the tooling artifacts
+        working-directory: dist
+        run: sha256sum -- *.tgz release-notes.md > SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tooling-package
+          path: dist/
+          if-no-files-found: error
+  publish:
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - uses: actions/download-artifact@v4
+        with:
+          name: tooling-package
+          path: dist
+      - run: sha256sum -c SHA256SUMS
+        working-directory: dist
+      - run: npm publish dist/*.tgz --ignore-scripts --access public --provenance
+        if: vars.OPEN_TOOLING_PUBLISH_NPM == 'true'
+      - name: Publish tooling release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --title "Open Tooling $GITHUB_REF_NAME" --notes-file dist/release-notes.md

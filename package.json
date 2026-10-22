@@ -1,0 +1,18 @@
+{
+  "name": "@it-perspectives/open-tooling",
+  "version": "0.1.0",
+  "description": "Shared project contract, artifact builder and GitHub Actions for open-* specifications",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=22" },
+  "repository": { "type": "git", "url": "git+https://github.com/it-perspectives/open-tooling.git" },
+  "bin": { "open-tooling": "bin/open-tooling.js" },
+  "exports": { ".": "./src/index.js", "./schema": "./schemas/open-project.schema.json" },
+  "files": ["bin", "src", "schemas", "templates", "examples", "docs", "README.md", "CHANGELOG.md", "LICENSE"],
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "verify": "npm test",
+    "prepack": "npm run verify"
+  },
+  "dependencies": { "ajv": "8.20.0", "ajv-formats": "3.0.1", "yaml": "2.9.1" }
+}

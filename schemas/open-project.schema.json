@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/it-perspectives/open-tooling/v0.1.0/schemas/open-project.schema.json",
+  "title": "Open project build contract v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["openProject", "id", "title", "repository", "specification", "source", "checks", "products"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "openProject": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "title": { "type": "string", "minLength": 1 },
+    "repository": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+    "specification": {
+      "type": "object", "additionalProperties": false,
+      "required": ["version", "key", "schema", "examples"],
+      "properties": {
+        "version": { "$ref": "#/definitions/version" },
+        "key": { "type": "string", "pattern": "^[a-z][a-z0-9]*$" },
+        "schema": { "$ref": "#/definitions/path" },
+        "legacySchemaTag": { "type": "string", "pattern": "^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" },
+        "examples": {
+          "type": "object", "additionalProperties": false, "required": ["json", "yaml"],
+          "properties": { "json": { "$ref": "#/definitions/path" }, "yaml": { "$ref": "#/definitions/path" } }
+        },
+        "invalidExamples": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/definitions/path" } }
+      }
+    },
+    "source": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/definitions/path" } },
+    "checks": {
+      "type": "object", "additionalProperties": false, "required": ["verify"],
+      "properties": { "verify": { "$ref": "#/definitions/script" } }
+    },
+    "products": {
+      "type": "object", "additionalProperties": false, "required": ["npm", "vscode", "website"],
+      "properties": {
+        "npm": {
+          "type": "object", "additionalProperties": false, "required": ["name", "verify"],
+          "properties": { "name": { "type": "string", "pattern": "^(@[a-z0-9-]+/)?[a-z0-9][a-z0-9._-]*$" }, "verify": { "$ref": "#/definitions/script" } }
+        },
+        "vscode": {
+          "oneOf": [
+            { "$ref": "#/definitions/disabled" },
+            {
+              "type": "object", "additionalProperties": false,
+              "required": ["enabled", "packageJson", "build", "verify", "vsix", "minimumVersion"],
+              "properties": {
+                "enabled": { "const": true }, "packageJson": { "$ref": "#/definitions/path" },
+                "build": { "$ref": "#/definitions/script" }, "verify": { "$ref": "#/definitions/script" },
+                "vsix": { "$ref": "#/definitions/path" }, "minimumVersion": { "$ref": "#/definitions/version" }
+              }
+            }
+          ]
+        },
+        "website": {
+          "oneOf": [
+            { "$ref": "#/definitions/disabled" },
+            {
+              "type": "object", "additionalProperties": false,
+              "required": ["enabled", "packageJson", "build", "verify", "directory", "routes", "assets"],
+              "properties": {
+                "enabled": { "const": true }, "packageJson": { "$ref": "#/definitions/path" },
+                "build": { "$ref": "#/definitions/script" }, "verify": { "$ref": "#/definitions/script" },
+                "directory": { "$ref": "#/definitions/path" },
+                "routes": { "type": "array", "minItems": 1, "uniqueItems": true, "contains": { "const": "/" }, "items": { "type": "string", "pattern": "^/([a-zA-Z0-9_-]+/)*$" } },
+                "assets": {
+                  "type": "array", "minItems": 3,
+                  "items": { "type": "object", "additionalProperties": false, "required": ["source", "path"], "properties": { "source": { "$ref": "#/definitions/path" }, "path": { "$ref": "#/definitions/path" } } }
+                },
+                "image": {
+                  "type": "object", "additionalProperties": false, "required": ["dockerfile", "verify"],
+                  "properties": { "dockerfile": { "$ref": "#/definitions/path" }, "verify": { "$ref": "#/definitions/script" } }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "publishing": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "npm": { "type": "boolean" },
+        "marketplace": { "type": "boolean" },
+        "openVSX": { "type": "boolean" },
+        "image": { "type": "string", "pattern": "^ghcr\\.io/[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._/-]*$" }
+      }
+    }
+  },
+  "definitions": {
+    "version": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" },
+    "path": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9_.-]+(/[A-Za-z0-9_.-]+)*$" },
+    "script": { "type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9:_-]*$" },
+    "disabled": { "type": "object", "additionalProperties": false, "required": ["enabled", "reason"], "properties": { "enabled": { "const": false }, "reason": { "type": "string", "minLength": 10 } } }
+  }
+}

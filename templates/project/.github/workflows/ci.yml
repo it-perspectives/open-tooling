@@ -1,0 +1,14 @@
+name: Verify
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    uses: it-perspectives/open-tooling/.github/workflows/verify.yml@TOOLING_COMMIT_SHA
+    with:
+      tooling-ref: TOOLING_COMMIT_SHA
+      require-complete: true

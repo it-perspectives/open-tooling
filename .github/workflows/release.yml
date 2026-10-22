@@ -1,0 +1,122 @@
+name: Release open project
+on:
+  workflow_call:
+    inputs:
+      tooling-ref:
+        required: true
+        type: string
+      manifest:
+        default: .open-project.json
+        type: string
+      require-complete:
+        default: true
+        type: boolean
+permissions:
+  contents: read
+concurrency:
+  group: open-release-${{ github.repository }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    uses: ./.github/workflows/verify.yml
+    with:
+      tooling-ref: ${{ inputs.tooling-ref }}
+      manifest: ${{ inputs.manifest }}
+      require-complete: ${{ inputs.require-complete }}
+  plan:
+    needs: verify
+    runs-on: ubuntu-latest
+    outputs:
+      npm: ${{ steps.plan.outputs.npm }}
+      marketplace: ${{ steps.plan.outputs.marketplace }}
+      openVSX: ${{ steps.plan.outputs.openVSX }}
+      image: ${{ steps.plan.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: it-perspectives/open-tooling
+          ref: ${{ inputs.tooling-ref }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci --ignore-scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: open-products
+          path: artifacts
+      - id: plan
+        run: node bin/open-tooling.js verify-artifacts --artifacts artifacts --commit "$GITHUB_SHA" --tag "$GITHUB_REF_NAME" --repository "$GITHUB_REPOSITORY" --github-output
+  registries:
+    needs: plan
+    if: needs.plan.outputs.npm == 'true' || needs.plan.outputs.marketplace == 'true' || needs.plan.outputs.openVSX == 'true' || needs.plan.outputs.image == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        destination: [npm, marketplace, openVSX, image]
+    steps:
+      - uses: actions/checkout@v4
+        if: needs.plan.outputs[matrix.destination] == 'true'
+        with:
+          repository: it-perspectives/open-tooling
+          ref: ${{ inputs.tooling-ref }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        if: needs.plan.outputs[matrix.destination] == 'true'
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - run: npm ci --ignore-scripts
+        if: needs.plan.outputs[matrix.destination] == 'true'
+      - uses: actions/download-artifact@v4
+        if: needs.plan.outputs[matrix.destination] == 'true'
+        with:
+          name: open-products
+          path: artifacts
+      - name: Install pinned extension publisher
+        if: needs.plan.outputs[matrix.destination] == 'true' && matrix.destination == 'marketplace'
+        run: npm install --global --ignore-scripts @vscode/vsce@4.0.0
+      - name: Install pinned Open VSX publisher
+        if: needs.plan.outputs[matrix.destination] == 'true' && matrix.destination == 'openVSX'
+        run: npm install --global --ignore-scripts ovsx@1.2.0
+      - name: Authenticate container registry
+        if: needs.plan.outputs.image == 'true' && matrix.destination == 'image'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: printf '%s' "$GH_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+      - name: Publish verified product
+        if: needs.plan.outputs[matrix.destination] == 'true'
+        env:
+          DESTINATION: ${{ matrix.destination }}
+        run: node bin/open-tooling.js publish "$DESTINATION" --artifacts artifacts --commit "$GITHUB_SHA" --tag "$GITHUB_REF_NAME" --repository "$GITHUB_REPOSITORY"
+  github:
+    needs: [plan, registries]
+    if: always() && needs.plan.result == 'success' && (needs.registries.result == 'success' || needs.registries.result == 'skipped')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: it-perspectives/open-tooling
+          ref: ${{ inputs.tooling-ref }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci --ignore-scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: open-products
+          path: artifacts
+      - name: Publish all artifacts as one GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node bin/open-tooling.js publish github --artifacts artifacts --commit "$GITHUB_SHA" --tag "$GITHUB_REF_NAME" --repository "$GITHUB_REPOSITORY"
