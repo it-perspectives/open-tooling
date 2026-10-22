@@ -27,7 +27,9 @@ test('shared verification gates the saved Node 24 artifact behind all builds', (
   const value = workflow('verify');
   assert.ok(value.on.workflow_call);
   assert.equal(value.on.workflow_call.inputs['require-complete'].default, true);
-  assert.deepEqual(value.jobs.verify.strategy.matrix.node, [22, 24]);
+  for (const job of [value.jobs.verify, workflow('ci').jobs.test, workflow('publish-tooling').jobs.test]) {
+    assert.deepEqual(job.strategy.matrix.node, [22, 24, 26]);
+  }
   assert.equal(value.permissions.contents, 'read');
   const upload = value.jobs.verify.steps.find(s => s.uses?.startsWith('actions/upload-artifact@'));
   assert.equal(upload.if, 'matrix.node == 24');

@@ -25,23 +25,23 @@ jobs:
       require-complete: ${{ inputs.require-complete }}
   plan:
     needs: verify
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       npm: ${{ steps.plan.outputs.npm }}
       marketplace: ${{ steps.plan.outputs.marketplace }}
       openVSX: ${{ steps.plan.outputs.openVSX }}
       image: ${{ steps.plan.outputs.image }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: it-perspectives/open-tooling
           ref: ${{ inputs.tooling-ref }}
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
       - run: npm ci --ignore-scripts
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: open-products
           path: artifacts
@@ -50,7 +50,7 @@ jobs:
   registries:
     needs: plan
     if: needs.plan.outputs.npm == 'true' || needs.plan.outputs.marketplace == 'true' || needs.plan.outputs.openVSX == 'true' || needs.plan.outputs.image == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
       contents: read
@@ -61,20 +61,20 @@ jobs:
       matrix:
         destination: [npm, marketplace, openVSX, image]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         if: needs.plan.outputs[matrix.destination] == 'true'
         with:
           repository: it-perspectives/open-tooling
           ref: ${{ inputs.tooling-ref }}
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: needs.plan.outputs[matrix.destination] == 'true'
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
       - run: npm ci --ignore-scripts
         if: needs.plan.outputs[matrix.destination] == 'true'
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         if: needs.plan.outputs[matrix.destination] == 'true'
         with:
           name: open-products
@@ -98,21 +98,21 @@ jobs:
   github:
     needs: [plan, registries]
     if: always() && needs.plan.result == 'success' && (needs.registries.result == 'success' || needs.registries.result == 'skipped')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: it-perspectives/open-tooling
           ref: ${{ inputs.tooling-ref }}
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
       - run: npm ci --ignore-scripts
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: open-products
           path: artifacts

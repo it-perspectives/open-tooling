@@ -2,7 +2,7 @@
 
 ## Consumer releases
 
-All releases pass the shared Node 22/24 verification workflow. Only the Node 24 artifact is uploaded, and downstream jobs depend on the entire matrix. There is no rebuild in a publishing job.
+All releases pass the shared Node 22/24/26 verification workflow on `ubuntu-24.04`. Only the Node 24 artifact is uploaded, and downstream jobs depend on the entire matrix. Packaging and publication use Node 24; the Actions runtime is also Node 24. There is no rebuild in a publishing job.
 
 | Tag | Version/notes source | Optional registry publication |
 | --- | --- | --- |

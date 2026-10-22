@@ -6,7 +6,7 @@ Shared build contract, CLI and GitHub Actions workflows for the `open-*` specifi
 
 Each specification stays in its own repository. This repository owns the common composition checks, packaging, artifact inventory and release orchestration. Domain validators, editor behavior and website content stay with their projects.
 
-Requires Node.js 22 or 24, npm, Git, `tar`, `zip` and `unzip`. A website image additionally needs Docker. Linux extension-host checks run under Xvfb in the shared workflow. The tooling uses JSON Schema draft 7 for its manifest and accepts draft 7 or 2020-12 project schemas.
+Supports Node.js 22, 24 and 26. Requires npm, Git, `tar`, `zip` and `unzip`. A website image additionally needs Docker. Linux extension-host checks run under Xvfb in the shared workflow. The tooling uses JSON Schema draft 7 for its manifest and accepts draft 7 or 2020-12 project schemas.
 
 ## Local development
 
@@ -51,7 +51,9 @@ jobs:
       tooling-ref: TOOLING_COMMIT_SHA
 ```
 
-`verify.yml` builds on Node 22 and 24 and saves the Node 24 artifact only for a successful matrix. `release.yml` uses that same verification, downloads the saved products, validates their commit/tag/repository and publishes without rebuilding or executing consumer hooks in publishing jobs.
+`verify.yml` builds on Node 22, 24 and 26 and saves the Node 24 artifact for publication after the entire matrix succeeds. `release.yml` uses that same verification, downloads the saved products, validates their commit/tag/repository and publishes without rebuilding or executing consumer hooks in publishing jobs.
+
+All jobs use `ubuntu-24.04`. The GitHub Actions themselves use the Node 24 runtime, independently of the Node 22/24/26 versions installed for project tests.
 
 Supported release tags are `specification-vX.Y.Z`, `extension-vX.Y.Z` and `website-vX.Y.Z`. Specification and npm versions match; editor and website versions are independent. A release includes the full configured product set; the tag selects its title, version, notes and registry destinations. Registry publication is explicitly enabled in the manifest and defaults to off. GitHub Releases always receives the complete artifact set. Static hosting/deployment is handled by the consuming infrastructure.
 
