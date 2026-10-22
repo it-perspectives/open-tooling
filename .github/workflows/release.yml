@@ -32,7 +32,7 @@ jobs:
       openVSX: ${{ steps.plan.outputs.openVSX }}
       image: ${{ steps.plan.outputs.image }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: it-perspectives/open-tooling
           ref: ${{ inputs.tooling-ref }}
@@ -61,7 +61,7 @@ jobs:
       matrix:
         destination: [npm, marketplace, openVSX, image]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         if: needs.plan.outputs[matrix.destination] == 'true'
         with:
           repository: it-perspectives/open-tooling
@@ -103,7 +103,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: it-perspectives/open-tooling
           ref: ${{ inputs.tooling-ref }}

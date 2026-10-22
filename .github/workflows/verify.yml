@@ -24,12 +24,12 @@ jobs:
       matrix:
         node: [22, 24]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Validate tooling pin
         env:
           TOOLING_REF: ${{ inputs.tooling-ref }}
         run: '[[ "$TOOLING_REF" =~ ^[a-f0-9]{40}$ ]]'
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: it-perspectives/open-tooling
           ref: ${{ inputs.tooling-ref }}
