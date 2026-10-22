@@ -52,7 +52,7 @@ jobs:
           if [[ "$COMPLETE" == true ]]; then flags+=(--complete); fi
           if [[ "$GITHUB_REF_TYPE" == tag ]]; then flags+=(--tag "$GITHUB_REF_NAME"); fi
           xvfb-run -a node .open-tooling-runtime/bin/open-tooling.js build --manifest "$MANIFEST" "${flags[@]}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: matrix.node == 24
         with:
           name: open-products
