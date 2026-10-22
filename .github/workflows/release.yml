@@ -41,7 +41,7 @@ jobs:
         with:
           node-version: 24
       - run: npm ci --ignore-scripts
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: open-products
           path: artifacts
@@ -74,7 +74,7 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: npm ci --ignore-scripts
         if: needs.plan.outputs[matrix.destination] == 'true'
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         if: needs.plan.outputs[matrix.destination] == 'true'
         with:
           name: open-products
@@ -112,7 +112,7 @@ jobs:
         with:
           node-version: 24
       - run: npm ci --ignore-scripts
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: open-products
           path: artifacts
